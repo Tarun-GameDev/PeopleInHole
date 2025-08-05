@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8dd27e950a70be4a882bd5867359204, type: 3}
+  m_Name: GridRules_Gecko
+  m_EditorClassIdentifier: 
+  singlePrefab: {fileID: 6715689002386952436, guid: 3d95affb1629fdd4cab0b0261c6c9baf,
+    type: 3}
+  centerPrefab: {fileID: 7593279675602177240, guid: a2e59a610c90c5d44b0aea36867d713f,
+    type: 3}
+  edgePrefab: {fileID: 4305018638281866164, guid: 96096d6ba6f93e24daeffa18c0577b3f,
+    type: 3}
+  edgeWith2SidePrefab: {fileID: 5733279503514301458, guid: 0c2cb229a026d3d4cbc412c8bb848c61,
+    type: 3}
+  edgePrefabWith1DiagonalL: {fileID: 7331031718893151453, guid: fd7182be454a5a346b17da300f913e73,
+    type: 3}
+  edgePrefabWith1DiagonalR: {fileID: 6407828077458361774, guid: a869e813d45e2b04cac5eaa99611b41b,
+    type: 3}
+  edgePrefabWith2Diagonal: {fileID: 9200790596759752141, guid: 490f4ed8422372d46b9e58a55cb165cf,
+    type: 3}
+  cornerPrefab: {fileID: 4900015971334882460, guid: 593e9d2847d152f489d3a3b36099673d,
+    type: 3}
+  cornerPrefabWithCorner: {fileID: 490282882398053320, guid: a94d16b5a8b5d7745b18b1424230d235,
+    type: 3}
+  invertedCornerPrefab: {fileID: 998707055955641158, guid: 2aa8b685ee1b9534188c366caa9317ec,
+    type: 3}
+  invertedTopPrefab: {fileID: 5024446329198215335, guid: b217c86d3b19d844fa60e106fb31e49d,
+    type: 3}
+  invertedTopThreePrefab: {fileID: 7074151751648106025, guid: b47cbc0a5320ce245bf835b88f80a1d2,
+    type: 3}
+  crossPrefab: {fileID: 1744542557383789464, guid: a3bb1c6891639a3499d701c8e8501ea2,
+    type: 3}
+  slashPrefab: {fileID: 5303722391771346502, guid: 1096ce634c5765746b18394504c7e2d3,
+    type: 3}
+  singleEdgePrefab: {fileID: 8123220110046093980, guid: b8c6c13a22495a34cada80c191c4694c,
+    type: 3}

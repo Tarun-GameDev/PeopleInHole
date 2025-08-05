@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8dd27e950a70be4a882bd5867359204, type: 3}
+  m_Name: New Rule Tile
+  m_EditorClassIdentifier: 
+  singlePrefab: {fileID: 1422957133036963518, guid: 1fe714df3327ebd499c8b7bf1805c708, type: 3}
+  centerPrefab: {fileID: 7051412120484650125, guid: 525b6de6864f9864d9cde37bee89ba09, type: 3}
+  edgePrefab: {fileID: 1422957133036963518, guid: 17d7fa07a51ff1a41aeb15e7242f17d3, type: 3}
+  edgeWith2SidePrefab: {fileID: 1422957133036963518, guid: ee282b43088e1f44980e62d6add4a951, type: 3}
+  edgePrefabWith1DiagonalL: {fileID: 1422957133036963518, guid: db5cf378543012d438cc74abd34de4a9, type: 3}
+  edgePrefabWith1DiagonalR: {fileID: 1422957133036963518, guid: 14dc38c2b0c93a74eaf3f162328532a1, type: 3}
+  edgePrefabWith2Diagonal: {fileID: 1422957133036963518, guid: 8e2ef4ce321fbc049bf18f07599d6664, type: 3}
+  cornerPrefab: {fileID: 1422957133036963518, guid: 2cbfc9b233e447d48b796ce48e594402, type: 3}
+  cornerPrefabWithCorner: {fileID: 1422957133036963518, guid: 791c40a40873e074dacc07b2d47e0d9d, type: 3}
+  invertedCornerPrefab: {fileID: 1422957133036963518, guid: 3c63d364f1886ce42a068090661cb98c, type: 3}
+  invertedTopPrefab: {fileID: 1422957133036963518, guid: 6226390b27626ba41b729f1a0a95548d, type: 3}
+  invertedTopThreePrefab: {fileID: 1422957133036963518, guid: 5bf659dd8ea72024c9d2be67cc03dcdf, type: 3}
+  crossPrefab: {fileID: 7051412120484650125, guid: 377fb365d7db4ee4b9536b3bd71402aa, type: 3}
+  slashPrefab: {fileID: 1422957133036963518, guid: fcfb075407c67ce4aa5643ef96b630d3, type: 3}
+  singleEdgePrefab: {fileID: 1422957133036963518, guid: 1e00d8e0bfb67c74eb3ded7e24e8ea9e, type: 3}
