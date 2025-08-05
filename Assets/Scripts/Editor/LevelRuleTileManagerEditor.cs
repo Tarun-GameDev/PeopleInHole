@@ -21,18 +21,6 @@ public class LevelRuleTileManagerEditor : RuleTileMangerEditor
         
         EditorGUILayout.LabelField("Level Design Tools", EditorStyles.boldLabel);
 
-        if (GUILayout.Button("Generate Blocks"))
-        {
-            var generator = (LevelRuleTileManager)target;
-            generator.GenerateBlocks();
-        }
-
-        if (GUILayout.Button("Remove Blocks"))
-        {
-            var generator = (LevelRuleTileManager)target;
-            generator.RemoveBlocks();
-        }
-
         // Create horizontal layout for the hole placement controls
         EditorGUILayout.BeginHorizontal();
         
@@ -43,14 +31,12 @@ public class LevelRuleTileManagerEditor : RuleTileMangerEditor
         if (GUILayout.Button("Place Holes", GUILayout.Width(100)))
         {
             var generator = (LevelRuleTileManager)target;
-            generator.PlaceHoles(selectedHoleColor);
         }
 
         // Remove Holes button
         if (GUILayout.Button("Remove Holes", GUILayout.Width(100)))
         {
             var generator = (LevelRuleTileManager)target;
-            generator.RemoveHoles();
         }
 
         EditorGUILayout.EndHorizontal();

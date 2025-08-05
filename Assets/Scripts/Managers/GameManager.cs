@@ -28,8 +28,6 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        Application.targetFrameRate = 240;
-
         levelRuleTileManger.Init();
     }
 }
