@@ -23,6 +23,8 @@ public class LevelRuleTileManager : RuleTileManger
     // Add serialized list for persistent inner tile data
     [SerializeField] private List<PlacedObj> innerTileList = new List<PlacedObj>();
     
+    [SerializeField] private List<PlacedObj> placedHoles = new List<PlacedObj>();
+
     private HashSet<Vector2Int> placedTilesCache = new HashSet<Vector2Int>();
 
     // Performance optimization: Cache hole positions for O(1) lookups
@@ -47,7 +49,7 @@ public class LevelRuleTileManager : RuleTileManger
         
         // Rebuild inner tiles dictionary from serialized data
         RebuildInnerTilesDictionary();
-
+        
         // Initialize the cache for placed tiles
         placedTilesCache = new HashSet<Vector2Int>(placedTiles.Keys);
     }
@@ -83,8 +85,15 @@ public class LevelRuleTileManager : RuleTileManger
             }
         }
     }
-
+    
 #if UNITY_EDITOR
+
+    public override void GenerateGrid()
+    {
+        base.GenerateGrid();
+
+        GenerateInnerGrid();
+    }
 
     void GenerateInnerGrid()
     {
@@ -113,6 +122,20 @@ public class LevelRuleTileManager : RuleTileManger
     }
     
 
+    public void RemoveHoles()
+    {
+        foreach (var selectedCell in selectedCells)
+        {
+            var selectedHole = placedHoles.Find(hole => hole.position == selectedCell);
+
+            if (selectedHole.tile != null)
+            {
+                DestroyImmediate(selectedHole.tile);
+                placedHoles.Remove(selectedHole);
+            }
+        }
+    }
+
     public void RemoveInnerTiles()
     {
         foreach (var innerTile in innerTiles)
@@ -130,6 +153,9 @@ public class LevelRuleTileManager : RuleTileManger
 
     public override void DeleteSelectedTiles()
     {
+        // Also Remove the placed holes from list
+        RemoveHoles();
+
         base.DeleteSelectedTiles();
 
         GenerateInnerGrid();

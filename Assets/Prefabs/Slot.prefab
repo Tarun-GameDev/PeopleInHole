@@ -74,7 +74,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: e08a19324799b194f9b8e0e7bb1885e1, type: 3}
-  m_Color: {r: 0.6509434, g: 0.6509434, b: 0.6509434, a: 0.2}
+  m_Color: {r: 0.42030397, g: 0.6078004, b: 0.872, a: 0.2}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 1
@@ -158,7 +158,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 2f648fd3c5876c74091f9bfd2eb3a06a, type: 3}
-  m_Color: {r: 0.509434, g: 0.509434, b: 0.509434, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 1
@@ -177,8 +177,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 736401677346164338}
-  - component: {fileID: 4232228427970794796}
-  - component: {fileID: 5805207033296593684}
   m_Layer: 0
   m_Name: Slot
   m_TagString: Untagged
@@ -203,36 +201,3 @@ Transform:
   - {fileID: 4684654333495104778}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &4232228427970794796
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5539658440334269105}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d7015e97d15201341b562328eb8aa79c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &5805207033296593684
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5539658440334269105}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64c2ea96684edbf4d86cb7502bba9109, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gridSize: {x: 4, y: 8}
-  cellSize: 0
-  snap: 0
-  drawGizmos: 1
-  showGridIndex: 1
-  OnGridUpdated:
-    m_PersistentCalls:
-      m_Calls: []
-  gridSpacing: {x: 0.5, y: 0.35}
