@@ -98,17 +98,3 @@ public enum GridDirection
     UpLeft,
 }
 
-public enum HoleColor
-{
-    None,
-    Red,
-    Green,
-    Blue,
-    Yellow,
-    Purple,
-    Orange,
-    Pink,
-    Brown,
-    Black,
-    White
-}

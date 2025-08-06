@@ -61,7 +61,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: acd7a9fca5f727b4d87f960b86120478, type: 2}
+  - {fileID: 2100000, guid: 39ae225f3bd65464c8f4f7cd0dc0d619, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -92,6 +92,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8088559323127075159}
+  - component: {fileID: 6630923381013445300}
   m_Layer: 0
   m_Name: Hole
   m_TagString: Untagged
@@ -116,6 +117,24 @@ Transform:
   - {fileID: 7834507296097096190}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6630923381013445300
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4937729296935639986}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1487f565d1a01734797b87c0edbb30ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MeshRenderers:
+  - {fileID: 6419959398538186678}
+  - {fileID: 5507504929542185951}
+  holeColor: 1
+  holePos: {x: 0, y: 0}
+  gameManager: {fileID: 0}
 --- !u!1 &8115823309649791785
 GameObject:
   m_ObjectHideFlags: 0
@@ -144,7 +163,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.18400002, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.2828, y: 1.2828, z: 1.2828}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8088559323127075159}
@@ -177,7 +196,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: b7367fe18a8723f4985b7bd289d18b16, type: 2}
+  - {fileID: 2100000, guid: 39ae225f3bd65464c8f4f7cd0dc0d619, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

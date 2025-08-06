@@ -2,228 +2,428 @@ using DT.GridSystem.Ruletile;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 #if UNITY_EDITOR
 using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
 #endif
 
-[System.Serializable]
+[Serializable]
 public struct PlacedObj
 {
     public Vector2Int position;
-    public GameObject tile;
+    public GameObject Obj;
 }
 
 public class LevelRuleTileManager : RuleTileManger
 {
-    [SerializeField] GameObject innerTilePrefab;
-    Dictionary<Vector2Int, GameObject> innerTiles = new();
-    
-    // Add serialized list for persistent inner tile data
-    [SerializeField] private List<PlacedObj> innerTileList = new List<PlacedObj>();
-    
-    [SerializeField] private List<PlacedObj> placedHoles = new List<PlacedObj>();
+    [Header("Prefabs & Parents")] [SerializeField]
+    private GameObject innerTilePrefab;
 
-    private HashSet<Vector2Int> placedTilesCache = new HashSet<Vector2Int>();
+    [SerializeField] private GameObject holePrefab;
+    [SerializeField] private GameObject holeEmptyParent;
 
-    // Performance optimization: Cache hole positions for O(1) lookups
-    private HashSet<Vector2Int> holePositionsCache = new HashSet<Vector2Int>();
-    
-    // Performance optimization: Pre-calculated Manhattan neighbor offsets
-    private static readonly Vector2Int[] manhattanOffsets = new Vector2Int[]
-    {
-        new Vector2Int(0, 1),   // Up
-        new Vector2Int(1, 0),   // Right
-        new Vector2Int(0, -1),  // Down
-        new Vector2Int(-1, 0)   // Left
-    };
+    // In-scene caches (not serialized)
+    private Dictionary<Vector2Int, GameObject> innerTiles = new();
+    public HashSet<Vector2Int> placedTilesCache = new();
+    public HashSet<Vector2Int> holePositionsCache = new();
+    private Dictionary<Vector2Int, ColorEnum> holeColorCache = new();
 
-    // Add this new cache for O(1) color-specific hole lookups
-    private Dictionary<Vector2Int, HoleColor> holeColorCache = new Dictionary<Vector2Int, HoleColor>();
+    // Serialized data for persistence
+    [SerializeField] private List<PlacedObj> innerTileList = new();
+    [SerializeField] private List<PlacedObj> placedHoles = new();
 
+    [HideInInspector] public ColorEnum selectedHoleColor;
+
+    /// <summary>
+    /// Call this on Awake/Start to rebuild dictionaries from serialized data.
+    /// </summary>
     public void Init()
     {
-        // Rebuild the placedTiles dictionary from serialized data (works in builds)
         RebuildDictionary();
-        
-        // Rebuild inner tiles dictionary from serialized data
         RebuildInnerTilesDictionary();
-        
-        // Initialize the cache for placed tiles
+
         placedTilesCache = new HashSet<Vector2Int>(placedTiles.Keys);
+        holePositionsCache = new HashSet<Vector2Int>();
+        holeColorCache = new Dictionary<Vector2Int, ColorEnum>();
+    
+        // Safely rebuild hole caches
+        foreach (var hole in placedHoles.ToList()) // Use ToList() to avoid modification during iteration
+        {
+            if (hole.Obj != null)
+            {
+                var ctrl = hole.Obj.GetComponent<HoleController>();
+                if (ctrl != null)
+                {
+                    holePositionsCache.Add(hole.position);
+                    holeColorCache[hole.position] = ctrl.holeColor;
+                }
+                else
+                {
+                    Debug.LogWarning($"[LevelRuleTileManager] Hole at {hole.position} is missing HoleController component! Removing from list.", this);
+                    placedHoles.Remove(hole);
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[LevelRuleTileManager] Null hole object at {hole.position}! Removing from list.", this);
+                placedHoles.Remove(hole);
+            }
+        }
     }
 
-    // Method to rebuild innerTiles dictionary from serialized list
     private void RebuildInnerTilesDictionary()
     {
         innerTiles.Clear();
-        
-        foreach (var innerTile in innerTileList)
+        foreach (var tile in innerTileList.ToList()) // Use ToList() to avoid modification during iteration
         {
-            if (innerTile.tile != null)
+            if (tile.Obj != null)
+                innerTiles[tile.position] = tile.Obj;
+            else
             {
-                innerTiles[innerTile.position] = innerTile.tile;
+                Debug.LogWarning($"[LevelRuleTileManager] Null inner tile object at {tile.position}! Removing from list.", this);
+                innerTileList.Remove(tile);
             }
         }
     }
 
-    // Method to sync innerTiles dictionary to serialized list
     private void SyncInnerTileList()
     {
         innerTileList.Clear();
-        
-        foreach (var kvp in innerTiles)
+        foreach (var kv in innerTiles)
+            if (kv.Value != null)
+                innerTileList.Add(new PlacedObj { position = kv.Key, Obj = kv.Value });
+    }
+
+    private void SyncHoleList()
+    {
+        placedHoles.Clear();
+        foreach (var kv in holePositionsCache)
         {
-            if (kvp.Value != null)
-            {
-                innerTileList.Add(new PlacedObj
-                {
-                    position = kvp.Key,
-                    tile = kvp.Value
-                });
-            }
+            var existingHole = FindHoleGameObject(kv);
+            if (existingHole != null)
+                placedHoles.Add(new PlacedObj { position = kv, Obj = existingHole });
         }
     }
-    
-#if UNITY_EDITOR
 
+    private GameObject FindHoleGameObject(Vector2Int position)
+    {
+        if (holeEmptyParent == null) return null;
+        
+        foreach (Transform child in holeEmptyParent.transform)
+        {
+            var holeCtrl = child.GetComponent<HoleController>();
+            if (holeCtrl != null)
+            {
+                Vector2Int childGridPos = GetGridPosition(child.position);
+                if (childGridPos == position)
+                    return child.gameObject;
+            }
+        }
+        return null;
+    }
+
+#if UNITY_EDITOR
     public override void GenerateGrid()
     {
+        Undo.RecordObject(this, "Generate Grid");
         base.GenerateGrid();
-
         GenerateInnerGrid();
+        EditorUtility.SetDirty(this);
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
     }
 
-    void GenerateInnerGrid()
+    private void GenerateInnerGrid()
     {
-        foreach (var innerTile in innerTiles)
-        {
-            DestroyImmediate(innerTile.Value);
-        }
+        Undo.RecordObject(this, "Generate Inner Grid");
 
+        // Clean up existing inner tiles
+        foreach (var kv in innerTiles.ToList()) 
+        {
+            if (kv.Value != null)
+                DestroyImmediate(kv.Value);
+        }
         innerTiles.Clear();
 
-        for (int i = 0; i < GridSize.x; i++)
+        // Generate new inner tiles only where there are no placed tiles
+        // Holes can exist on top of inner tiles, so we don't check for holes here
+        for (int x = 0; x < GridSize.x; x++)
+        for (int y = 0; y < GridSize.y; y++)
         {
-            for (int j = 0; j < GridSize.y; j++)
-            {
-                if (!placedTiles.ContainsKey(new Vector2Int(i, j)))
-                {
-                    var innerTile = (GameObject)PrefabUtility.InstantiatePrefab(innerTilePrefab, container);
-                    innerTile.transform.SetPositionAndRotation(GetWorldPosition(i, j, true), Quaternion.identity);
-                    innerTiles.Add(new Vector2Int(i, j), innerTile);
-                }
-            }
+            var cell = new Vector2Int(x, y);
+            
+            // Skip only if there's a placed tile at this position
+            // Inner tiles can exist underneath holes
+            if (placedTiles.ContainsKey(cell))
+                continue;
+
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(innerTilePrefab, container);
+            go.transform.SetPositionAndRotation(GetWorldPosition(x, y, true), Quaternion.identity);
+            innerTiles[cell] = go;
         }
-        
-        // Sync to serialized list
+
         SyncInnerTileList();
+        EditorUtility.SetDirty(this);
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
     }
     
+    public void SpawnHole()
+    {
+        // Guard missing references
+        if (holePrefab == null)
+        {
+            Debug.LogError("[LevelRuleTileManager] Hole Prefab is not assigned!", this);
+            return;
+        }
+
+        if (holeEmptyParent == null)
+        {
+            Debug.LogError("[LevelRuleTileManager] Hole Empty Parent is not assigned!", this);
+            return;
+        }
+
+        if (selectedCells == null || selectedCells.Count == 0)
+        {
+            Debug.LogWarning("[LevelRuleTileManager] No cells selected – nothing to do.", this);
+            return;
+        }
+
+        Undo.RecordObject(this, "Spawn Hole");
+
+        foreach (var cell in selectedCells)
+        {
+            // Check if hole already exists at this position
+            if (holePositionsCache.Contains(cell))
+            {
+                Debug.LogWarning($"[LevelRuleTileManager] Hole already exists at {cell}. Skipping.", this);
+                continue;
+            }
+
+            // Check if there's a placed tile at this position - holes cannot be placed on placed tiles
+            if (placedTilesCache.Contains(cell))
+            {
+                Debug.LogWarning($"[LevelRuleTileManager] Cannot place hole at {cell} - position is blocked by a placed tile.", this);
+                continue;
+            }
+
+            Vector3 spawnPos = GetWorldPosition(cell.x, cell.y);
+            
+            Debug.Log($"[LevelRuleTileManager] Attempting to spawn hole at {cell} (world pos: {spawnPos})");
+            
+            var holeGO = (GameObject)PrefabUtility.InstantiatePrefab(holePrefab, holeEmptyParent.transform);
+            
+            if (holeGO == null)
+            {
+                Debug.LogError($"[LevelRuleTileManager] Failed to instantiate hole prefab at {cell}!", this);
+                continue;
+            }
+            
+            holeGO.transform.position = spawnPos;
+
+            var ctrl = holeGO.GetComponent<HoleController>();
+            if (ctrl == null)
+            {
+                Debug.LogError($"[LevelRuleTileManager] HoleController component missing on hole prefab! GameObject: {holeGO.name}", this);
+                DestroyImmediate(holeGO);
+                continue;
+            }
+
+            ctrl.holeColor = selectedHoleColor;
+            ctrl.UpdateHoleMaterials();
+
+            // Update all caches and lists
+            placedHoles.Add(new PlacedObj { position = cell, Obj = holeGO });
+            holePositionsCache.Add(cell);
+            holeColorCache[cell] = selectedHoleColor;
+
+            // DO NOT remove inner tiles - holes are placed on top of them
+            // Inner tiles should remain underneath holes
+            
+            Debug.Log($"[LevelRuleTileManager] Successfully spawned hole at {cell} with color {selectedHoleColor} (inner tile preserved)");
+        }
+
+        EditorUtility.SetDirty(this);
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+    }
 
     public void RemoveHoles()
     {
-        foreach (var selectedCell in selectedCells)
+        if (selectedCells == null || selectedCells.Count == 0)
         {
-            var selectedHole = placedHoles.Find(hole => hole.position == selectedCell);
+            Debug.LogWarning("[LevelRuleTileManager] No cells selected – nothing to remove.", this);
+            return;
+        }
 
-            if (selectedHole.tile != null)
+        Undo.RecordObject(this, "Remove Holes");
+
+        foreach (var cell in selectedCells.ToList())
+        {
+            // Find and remove from placedHoles list
+            var holeEntry = placedHoles.Find(h => h.position == cell);
+            if (holeEntry.Obj != null)
             {
-                DestroyImmediate(selectedHole.tile);
-                placedHoles.Remove(selectedHole);
+                DestroyImmediate(holeEntry.Obj);
+                placedHoles.Remove(holeEntry);
+                
+                // Update caches
+                holePositionsCache.Remove(cell);
+                holeColorCache.Remove(cell);
+                
+                Debug.Log($"[LevelRuleTileManager] Removed hole at {cell}");
+            }
+            else if (holePositionsCache.Contains(cell))
+            {
+                // Handle case where cache has entry but GameObject is missing
+                Debug.LogWarning($"[LevelRuleTileManager] Found orphaned hole entry at {cell}. Cleaning up cache.", this);
+                holePositionsCache.Remove(cell);
+                holeColorCache.Remove(cell);
+                placedHoles.RemoveAll(h => h.position == cell);
             }
         }
+
+        // DO NOT regenerate inner tiles - they should already exist underneath the holes
+        // Holes are placed on top, so removing them just reveals the inner tiles below
+
+        EditorUtility.SetDirty(this);
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+    }
+
+    private void RegenerateInnerTilesInCells(HashSet<Vector2Int> cells)
+    {
+        if (innerTilePrefab == null) return;
+
+        foreach (var cell in cells)
+        {
+            // Only generate inner tile if there's no placed tile at this position
+            // Holes can exist on top of inner tiles, so we don't check for holes
+            if (!placedTilesCache.Contains(cell))
+            {
+                // Check if inner tile already exists
+                if (!innerTiles.ContainsKey(cell))
+                {
+                    var go = (GameObject)PrefabUtility.InstantiatePrefab(innerTilePrefab, container);
+                    go.transform.SetPositionAndRotation(GetWorldPosition(cell.x, cell.y, true), Quaternion.identity);
+                    innerTiles[cell] = go;
+                }
+            }
+        }
+
+        SyncInnerTileList();
     }
 
     public void RemoveInnerTiles()
     {
-        foreach (var innerTile in innerTiles)
+        Undo.RecordObject(this, "Remove Inner Tiles");
+
+        foreach (var kv in innerTiles.ToList())
         {
-            if (innerTile.Value != null)
-            {
-                DestroyImmediate(innerTile.Value);
-            }
+            if (kv.Value != null)
+                DestroyImmediate(kv.Value);
         }
         innerTiles.Clear();
-        
-        // Sync to serialized list
         SyncInnerTileList();
+
+        EditorUtility.SetDirty(this);
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
     }
 
     public override void DeleteSelectedTiles()
     {
-        // Also Remove the placed holes from list
+        if (selectedCells == null || selectedCells.Count == 0)
+        {
+            Debug.LogWarning("[LevelRuleTileManager] No cells selected – nothing to delete.", this);
+            return;
+        }
+
+        Undo.RecordObject(this, "Delete Selected Tiles");
+
+        // Remove holes first
         RemoveHoles();
-
+        
+        // Remove placed tiles (from base class)
         base.DeleteSelectedTiles();
-
+        
+        // Regenerate inner grid to fill in gaps
         GenerateInnerGrid();
+
+        EditorUtility.SetDirty(this);
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
     }
 
     public override void DeleteAllChildren()
     {
-        base.DeleteAllChildren();
+        Undo.RecordObject(this, "Delete All Children");
 
+        // Clear all caches first
+        holePositionsCache.Clear();
+        holeColorCache.Clear();
+        placedHoles.Clear();
+
+        // Delete all children (from base class)
+        base.DeleteAllChildren();
+        
+        // Remove inner tiles
         RemoveInnerTiles();
+
+        EditorUtility.SetDirty(this);
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
     }
 
+    /// <summary>
+    /// Clean up any orphaned entries in lists and caches
+    /// </summary>
+    public void CleanupOrphanedEntries()
+    {
+        // Clean up holes
+        for (int i = placedHoles.Count - 1; i >= 0; i--)
+        {
+            var hole = placedHoles[i];
+            if (hole.Obj == null)
+            {
+                placedHoles.RemoveAt(i);
+                holePositionsCache.Remove(hole.position);
+                holeColorCache.Remove(hole.position);
+                Debug.Log($"[LevelRuleTileManager] Cleaned up orphaned hole entry at {hole.position}");
+            }
+        }
+
+        // Clean up inner tiles
+        foreach (var kv in innerTiles.ToList())
+        {
+            if (kv.Value == null)
+            {
+                innerTiles.Remove(kv.Key);
+                Debug.Log($"[LevelRuleTileManager] Cleaned up orphaned inner tile entry at {kv.Key}");
+            }
+        }
+
+        SyncInnerTileList();
+    }
 #endif
 
-    public bool IsBlocked(Vector2Int pos)
+    /// <summary>
+    /// Returns true if a placed (blocking) tile exists at the given coord.
+    /// </summary>
+    public bool IsBlocked(Vector2Int pos) => placedTilesCache.Contains(pos);
+
+    /// <summary>
+    /// Returns true if a hole of any color exists at the given coord.
+    /// </summary>
+    public bool IsHole(Vector2Int pos) => holeColorCache.ContainsKey(pos);
+
+    /// <summary>
+    /// Returns the color of the hole at the given position, or null if no hole exists.
+    /// </summary>
+    public ColorEnum? GetHoleColor(Vector2Int pos)
     {
-        return placedTilesCache.Contains(pos);
+        return holeColorCache.TryGetValue(pos, out ColorEnum color) ? color : null;
     }
 
-    public bool IsHole(Vector2Int pos)
-    {
-        return holeColorCache.ContainsKey(pos);
-    }
-
-    /*public bool IsOurHole(Vector2Int pos, CrowdBoxController crowdBoxController)
-    {
-        return holeColorCache.TryGetValue(pos, out HoleColor holeColor) && 
-               holeColor == crowdBoxController.CrowdBoxControllerColor;
-    }*/
-
-    public List<Vector2Int> GetManhattanNeighbourTiles(Vector2Int gridPos)
-    {
-        // Pre-allocate list with known capacity for better performance
-        List<Vector2Int> result = new List<Vector2Int>(4);
-
-        // Use pre-calculated offsets instead of enum iteration and direction conversion
-        for (int i = 0; i < manhattanOffsets.Length; i++)
-        {
-            Vector2Int neighbor = gridPos + manhattanOffsets[i];
-            
-            // Check if the neighbor position is within grid bounds
-            if (IsInBounds(neighbor))
-            {
-                result.Add(neighbor);
-            }
-        }
-
-        return result;
-    }
-
-    public List<Vector2Int> GetNeighbourTiles(Vector2Int gridPos)
-    {
-        List<Vector2Int> result = new();
-        Vector2Int currentGridPos = gridPos;
-
-        var directions = Enum.GetValues(typeof(GridDirection)).Cast<GridDirection>();
-
-        // Add neighboring positions if they're valid
-        foreach (var direction in directions)
-        {
-            var neighbor = currentGridPos + Utils.GetDirection(direction);
-            // Check if the neighbor position is within grid bounds
-            if (IsInBounds(neighbor))
-            {
-                result.Add(new(neighbor.x, neighbor.y));
-            }
-        }
-
-        return result;
-    }
+    /// <summary>
+    /// Returns true if there's an inner tile at the given position.
+    /// </summary>
+    public bool HasInnerTile(Vector2Int pos) => innerTiles.ContainsKey(pos);
 }
