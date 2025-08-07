@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using DG.Tweening;
+using Sirenix.OdinInspector;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -14,7 +15,7 @@ public class HoleController : MonoBehaviour
 
     public GameManager gameManager;
     public bool isMoving = false;
-
+    public bool holeDead =  false;
     public void UpdateHoleMaterials()
     {
         if (gameManager == null)
@@ -39,12 +40,15 @@ public class HoleController : MonoBehaviour
     }
 
     // --- Move and slide logic encapsulated here ---
-    public void SlideUntilBlocked(Vector2Int direction, LevelRuleTileManager mgr, Action<Vector2Int> onComplete,float moveSpeed)
+    public void SlideUntilBlocked(Vector2Int direction, LevelRuleTileManager mgr, Action<Vector2Int> onComplete,
+        float moveSpeed)
     {
-        if (isMoving || mgr == null) return;
+        if (isMoving || holeDead || mgr == null) return;
 
         Vector2Int currentPos = holePos;
         Vector2Int targetPos = currentPos;
+
+        bool playerGroupFoundInTargetPos = false;
 
         // Slide until blocked
         while (true)
@@ -53,12 +57,24 @@ public class HoleController : MonoBehaviour
             bool canMove =
                 mgr.innerTilePositionsCache.Contains(nextPos) &&
                 !mgr.IsBlocked(nextPos) &&
-                !mgr.IsHole(nextPos);
+                !mgr.IsHole(nextPos) && !mgr.IsPlayerGroup(nextPos);
 
             if (canMove)
                 targetPos = nextPos;
             else
+            {
+                if (mgr.IsPlayerGroup(nextPos))
+                {
+                    if (holeColor == mgr.GetPlayerGroupColor(nextPos))
+                    {
+                        playerGroupFoundInTargetPos = true;
+                        holeDead = true;
+                        targetPos = nextPos;
+                    }
+                }
+
                 break;
+            }
         }
 
         if (targetPos != currentPos)
@@ -70,14 +86,30 @@ public class HoleController : MonoBehaviour
                 moveSpeed * moveDistance
             ).OnComplete(() =>
             {
-                mgr.UpdateHolePos(this, targetPos);
+                if (playerGroupFoundInTargetPos)
+                {
+                     mgr.GetPlayerGroup(targetPos).DestroyPlayerGroup();
+                     mgr.RemovePlayerGroup(targetPos);
+                     mgr.RemoveHole(targetPos);
+                     MakeHoleDeadEffect();
+                }
+                else
+                {
+                    mgr.UpdateHolePos(this, targetPos);
+                }
                 isMoving = false;
                 onComplete?.Invoke(targetPos);
+                
             });
         }
         else
         {
             onComplete?.Invoke(currentPos);
         }
+    }
+
+    public void MakeHoleDeadEffect()
+    {
+        gameObject.transform.DOScale(Vector3.zero, 0.5f).SetEase(Ease.InBack).SetDelay(0.4f).OnComplete(() => gameObject.SetActive(false));
     }
 }

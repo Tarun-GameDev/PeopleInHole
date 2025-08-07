@@ -1,3 +1,4 @@
+// LevelRuleTileManager.cs
 using DT.GridSystem.Ruletile;
 using System;
 using System.Collections.Generic;
@@ -25,18 +26,29 @@ public class LevelRuleTileManager : RuleTileManger
     [SerializeField] private GameObject holePrefab;
     [SerializeField] private GameObject holeEmptyParent;
 
+    [SerializeField] private GameObject playerGroupPrefab;
+    [SerializeField] private GameObject playerGroupParent;
+
     // In-scene caches (not serialized)
     private Dictionary<Vector2Int, GameObject> innerTiles = new();
     public HashSet<Vector2Int> placedTilesCache = new();
+    public HashSet<Vector2Int> innerTilePositionsCache = new();    // ← re-added
+
+    private Dictionary<Vector2Int, GameObject> holeGameObjects = new();
     public HashSet<Vector2Int> holePositionsCache = new();
-    public HashSet<Vector2Int> innerTilePositionsCache = new();
     private Dictionary<Vector2Int, ColorEnum> holeColorCache = new();
+
+    private Dictionary<Vector2Int, GameObject> playerGameObjects = new();
+    public HashSet<Vector2Int> playerPositionsCache = new();
+    private Dictionary<Vector2Int, ColorEnum> playerColorCache = new();
 
     // Serialized data for persistence
     [SerializeField] private List<PlacedObj> innerTileList = new();
     [SerializeField] private List<PlacedObj> placedHoles = new();
+    [SerializeField] private List<PlacedObj> placedPlayers = new();
 
     [HideInInspector] public ColorEnum selectedHoleColor;
+    [HideInInspector] public ColorEnum selectedPlayerColor;
 
     /// <summary>
     /// Call this on Awake/Start to rebuild dictionaries from serialized data.
@@ -47,10 +59,11 @@ public class LevelRuleTileManager : RuleTileManger
         RebuildInnerTilesDictionary();
 
         placedTilesCache = new HashSet<Vector2Int>(placedTiles.Keys);
-        holePositionsCache = new HashSet<Vector2Int>();
-        holeColorCache = new Dictionary<Vector2Int, ColorEnum>();
 
-        // Safely rebuild hole caches
+        // Holes
+        holePositionsCache    = new HashSet<Vector2Int>();
+        holeColorCache        = new Dictionary<Vector2Int, ColorEnum>();
+        holeGameObjects       = new Dictionary<Vector2Int, GameObject>();
         foreach (var hole in placedHoles.ToList())
         {
             if (hole.Obj != null)
@@ -61,17 +74,48 @@ public class LevelRuleTileManager : RuleTileManger
                     holePositionsCache.Add(hole.position);
                     holeColorCache[hole.position] = ctrl.holeColor;
                     ctrl.holePos = hole.position;
+                    holeGameObjects[hole.position] = hole.Obj;
                 }
                 else
                 {
-                    Debug.LogWarning($"[LevelRuleTileManager] Hole at {hole.position} is missing HoleController component! Removing from list.", this);
+                    Debug.LogWarning($"[LevelRuleTileManager] Hole at {hole.position} missing HoleController; removing.", this);
                     placedHoles.Remove(hole);
                 }
             }
             else
             {
-                Debug.LogWarning($"[LevelRuleTileManager] Null hole object at {hole.position}! Removing from list.", this);
+                Debug.LogWarning($"[LevelRuleTileManager] Null hole object at {hole.position}; removing.", this);
                 placedHoles.Remove(hole);
+            }
+        }
+
+        // Player Groups
+        playerPositionsCache  = new HashSet<Vector2Int>();
+        playerColorCache      = new Dictionary<Vector2Int, ColorEnum>();
+        playerGameObjects     = new Dictionary<Vector2Int, GameObject>();
+        foreach (var p in placedPlayers.ToList())
+        {
+            if (p.Obj != null)
+            {
+                var ctrl = p.Obj.GetComponent<PlayerGroup>();
+                if (ctrl != null)
+                {
+                    playerPositionsCache.Add(p.position);
+                    playerColorCache[p.position] = ctrl.playerColor;
+                    ctrl.playerPos = p.position;
+                    ctrl.UpdatePlayerMaterials();
+                    playerGameObjects[p.position] = p.Obj;
+                }
+                else
+                {
+                    Debug.LogWarning($"[LevelRuleTileManager] Player at {p.position} missing PlayerGroup; removing.", this);
+                    placedPlayers.Remove(p);
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[LevelRuleTileManager] Null player object at {p.position}; removing.", this);
+                placedPlayers.Remove(p);
             }
         }
     }
@@ -85,12 +129,13 @@ public class LevelRuleTileManager : RuleTileManger
                 innerTiles[tile.position] = tile.Obj;
             else
             {
-                Debug.LogWarning($"[LevelRuleTileManager] Null inner tile object at {tile.position}! Removing from list.", this);
+                Debug.LogWarning($"[LevelRuleTileManager] Null inner tile at {tile.position}; removing.", this);
                 innerTileList.Remove(tile);
             }
         }
         SyncInnerTilePositionsCache();
     }
+
     private void SyncInnerTileList()
     {
         innerTileList.Clear();
@@ -108,28 +153,39 @@ public class LevelRuleTileManager : RuleTileManger
     private void SyncHoleList()
     {
         placedHoles.Clear();
-        foreach (var kv in holePositionsCache)
-        {
-            var existingHole = FindHoleGameObject(kv);
-            if (existingHole != null)
-                placedHoles.Add(new PlacedObj { position = kv, Obj = existingHole });
-        }
+        foreach (var kv in holeGameObjects)
+            if (kv.Value != null)
+                placedHoles.Add(new PlacedObj { position = kv.Key, Obj = kv.Value });
     }
-    
+
+    private void SyncPlayerGroupList()
+    {
+        placedPlayers.Clear();
+        foreach (var kv in playerGameObjects)
+            if (kv.Value != null)
+                placedPlayers.Add(new PlacedObj { position = kv.Key, Obj = kv.Value });
+    }
 
     private GameObject FindHoleGameObject(Vector2Int position)
     {
         if (holeEmptyParent == null) return null;
-
         foreach (Transform child in holeEmptyParent.transform)
         {
-            var holeCtrl = child.GetComponent<HoleController>();
-            if (holeCtrl != null)
-            {
-                Vector2Int childGridPos = GetGridPosition(child.position);
-                if (childGridPos == position)
-                    return child.gameObject;
-            }
+            var ctrl = child.GetComponent<HoleController>();
+            if (ctrl != null && GetGridPosition(child.position) == position)
+                return child.gameObject;
+        }
+        return null;
+    }
+
+    private GameObject FindPlayerGroupGameObject(Vector2Int position)
+    {
+        if (playerGroupParent == null) return null;
+        foreach (Transform child in playerGroupParent.transform)
+        {
+            var ctrl = child.GetComponent<PlayerGroup>();
+            if (ctrl != null && GetGridPosition(child.position) == position)
+                return child.gameObject;
         }
         return null;
     }
@@ -147,16 +203,11 @@ public class LevelRuleTileManager : RuleTileManger
     private void GenerateInnerGrid()
     {
         Undo.RecordObject(this, "Generate Inner Grid");
-
-        // Clean up existing inner tiles
         foreach (var kv in innerTiles.ToList())
-        {
             if (kv.Value != null)
                 DestroyImmediate(kv.Value);
-        }
         innerTiles.Clear();
 
-        // Generate new inner tiles only where there are no placed tiles
         for (int x = 0; x < GridSize.x; x++)
         for (int y = 0; y < GridSize.y; y++)
         {
@@ -174,64 +225,61 @@ public class LevelRuleTileManager : RuleTileManger
         EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
     }
 
+    public void RemoveInnerTiles()
+    {
+        Undo.RecordObject(this, "Remove Inner Tiles");
+        foreach (var kv in innerTiles.ToList())
+            if (kv.Value != null)
+                DestroyImmediate(kv.Value);
+        innerTiles.Clear();
+        SyncInnerTileList();
+        EditorUtility.SetDirty(this);
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+    }
+
     public void SpawnHole()
     {
-        if (holePrefab == null)
+        if (holePrefab == null || holeEmptyParent == null)
         {
-            Debug.LogError("[LevelRuleTileManager] Hole Prefab is not assigned!", this);
-            return;
-        }
-        if (holeEmptyParent == null)
-        {
-            Debug.LogError("[LevelRuleTileManager] Hole Empty Parent is not assigned!", this);
+            Debug.LogError("[LevelRuleTileManager] Hole Prefab or Parent not assigned!", this);
             return;
         }
         if (selectedCells == null || selectedCells.Count == 0)
         {
-            Debug.LogWarning("[LevelRuleTileManager] No cells selected – nothing to do.", this);
+            Debug.LogWarning("[LevelRuleTileManager] No cells selected for hole.", this);
             return;
         }
 
         Undo.RecordObject(this, "Spawn Hole");
-
         foreach (var cell in selectedCells)
         {
             if (holePositionsCache.Contains(cell))
             {
-                Debug.LogWarning($"[LevelRuleTileManager] Hole already exists at {cell}. Skipping.", this);
+                Debug.LogWarning($"Already a hole at {cell}. Skipping.", this);
                 continue;
             }
             if (placedTilesCache.Contains(cell))
             {
-                Debug.LogWarning($"[LevelRuleTileManager] Cannot place hole at {cell} - position is blocked by a placed tile.", this);
+                Debug.LogWarning($"Tile blocks hole at {cell}. Skipping.", this);
                 continue;
             }
 
             Vector3 spawnPos = GetWorldPosition(cell.x, cell.y);
             var holeGO = (GameObject)PrefabUtility.InstantiatePrefab(holePrefab, holeEmptyParent.transform);
-            if (holeGO == null)
-            {
-                Debug.LogError($"[LevelRuleTileManager] Failed to instantiate hole prefab at {cell}!", this);
-                continue;
-            }
             holeGO.transform.position = spawnPos;
 
             var ctrl = holeGO.GetComponent<HoleController>();
             if (ctrl == null)
             {
-                Debug.LogError($"[LevelRuleTileManager] HoleController component missing on hole prefab! GameObject: {holeGO.name}", this);
+                Debug.LogError($"HoleController missing on prefab! Destroying.", this);
                 DestroyImmediate(holeGO);
                 continue;
             }
 
-            // Set hole color/material before positioning
             ctrl.holeColor = selectedHoleColor;
             ctrl.UpdateHoleMaterials();
-
-            // CENTRALIZED update: add/move hole in one place
             UpdateHolePos(ctrl, cell);
-
-            Debug.Log($"[LevelRuleTileManager] Successfully spawned hole at {cell} with color {selectedHoleColor}");
+            Debug.Log($"Spawned hole at {cell} ({selectedHoleColor})", this);
         }
 
         EditorUtility.SetDirty(this);
@@ -242,28 +290,26 @@ public class LevelRuleTileManager : RuleTileManger
     {
         if (selectedCells == null || selectedCells.Count == 0)
         {
-            Debug.LogWarning("[LevelRuleTileManager] No cells selected – nothing to remove.", this);
+            Debug.LogWarning("[LevelRuleTileManager] No cells selected to remove holes.", this);
             return;
         }
 
         Undo.RecordObject(this, "Remove Holes");
-
         foreach (var cell in selectedCells.ToList())
         {
-            var holeEntry = placedHoles.Find(h => h.position == cell);
-            if (holeEntry.Obj != null)
+            var entry = placedHoles.Find(h => h.position == cell);
+            if (entry.Obj != null)
             {
-                var ctrl = holeEntry.Obj.GetComponent<HoleController>();
+                var ctrl = entry.Obj.GetComponent<HoleController>();
                 if (ctrl != null)
                 {
-                    // CENTRALIZED update: delete hole in one place
                     UpdateHolePos(ctrl, null);
-                    DestroyImmediate(holeEntry.Obj);
-                    Debug.Log($"[LevelRuleTileManager] Removed hole at {cell}");
+                    DestroyImmediate(entry.Obj);
+                    Debug.Log($"Removed hole at {cell}", this);
                 }
                 else
                 {
-                    Debug.LogWarning($"[LevelRuleTileManager] HoleController missing on object at {cell}. Cleaning up manually.", this);
+                    Debug.LogWarning($"HoleController missing at {cell}. Cleaning caches.", this);
                     holePositionsCache.Remove(cell);
                     holeColorCache.Remove(cell);
                     placedHoles.RemoveAll(h => h.position == cell);
@@ -271,7 +317,7 @@ public class LevelRuleTileManager : RuleTileManger
             }
             else if (holePositionsCache.Contains(cell))
             {
-                Debug.LogWarning($"[LevelRuleTileManager] Found orphaned hole entry at {cell}. Cleaning up cache.", this);
+                Debug.LogWarning($"Orphaned hole at {cell}. Cleaning caches.", this);
                 holePositionsCache.Remove(cell);
                 holeColorCache.Remove(cell);
                 placedHoles.RemoveAll(h => h.position == cell);
@@ -282,17 +328,92 @@ public class LevelRuleTileManager : RuleTileManger
         EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
     }
 
-    public void RemoveInnerTiles()
+    public void SpawnPlayerGroup()
     {
-        Undo.RecordObject(this, "Remove Inner Tiles");
-
-        foreach (var kv in innerTiles.ToList())
+        if (playerGroupPrefab == null || playerGroupParent == null)
         {
-            if (kv.Value != null)
-                DestroyImmediate(kv.Value);
+            Debug.LogError("[LevelRuleTileManager] Player Prefab or Parent not assigned!", this);
+            return;
         }
-        innerTiles.Clear();
-        SyncInnerTileList();
+        if (selectedCells == null || selectedCells.Count == 0)
+        {
+            Debug.LogWarning("[LevelRuleTileManager] No cells selected for player.", this);
+            return;
+        }
+
+        Undo.RecordObject(this, "Spawn Player Group");
+        foreach (var cell in selectedCells)
+        {
+            if (playerPositionsCache.Contains(cell))
+            {
+                Debug.LogWarning($"Already a player at {cell}. Skipping.", this);
+                continue;
+            }
+            if (placedTilesCache.Contains(cell) || holePositionsCache.Contains(cell))
+            {
+                Debug.LogWarning($"Cell {cell} is blocked. Skipping.", this);
+                continue;
+            }
+
+            Vector3 spawnPos = GetWorldPosition(cell.x, cell.y);
+            var pgGO = (GameObject)PrefabUtility.InstantiatePrefab(playerGroupPrefab, playerGroupParent.transform);
+            pgGO.transform.position = spawnPos;
+
+            var ctrl = pgGO.GetComponent<PlayerGroup>();
+            if (ctrl == null)
+            {
+                Debug.LogError($"PlayerGroup missing on prefab! Destroying.", this);
+                DestroyImmediate(pgGO);
+                continue;
+            }
+
+            ctrl.playerColor = selectedPlayerColor;
+            ctrl.UpdatePlayerMaterials();
+            UpdatePlayerPos(ctrl, cell);
+            Debug.Log($"Spawned player at {cell} ({selectedPlayerColor})", this);
+        }
+
+        EditorUtility.SetDirty(this);
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+    }
+
+    public void RemovePlayerGroups()
+    {
+        if (selectedCells == null || selectedCells.Count == 0)
+        {
+            Debug.LogWarning("[LevelRuleTileManager] No cells selected to remove players.", this);
+            return;
+        }
+
+        Undo.RecordObject(this, "Remove Player Groups");
+        foreach (var cell in selectedCells.ToList())
+        {
+            var entry = placedPlayers.Find(p => p.position == cell);
+            if (entry.Obj != null)
+            {
+                var ctrl = entry.Obj.GetComponent<PlayerGroup>();
+                if (ctrl != null)
+                {
+                    UpdatePlayerPos(ctrl, null);
+                    DestroyImmediate(entry.Obj);
+                    Debug.Log($"Removed player at {cell}", this);
+                }
+                else
+                {
+                    Debug.LogWarning($"PlayerGroup missing at {cell}. Cleaning caches.", this);
+                    playerPositionsCache.Remove(cell);
+                    playerColorCache.Remove(cell);
+                    placedPlayers.RemoveAll(p => p.position == cell);
+                }
+            }
+            else if (playerPositionsCache.Contains(cell))
+            {
+                Debug.LogWarning($"Orphaned player at {cell}. Cleaning caches.", this);
+                playerPositionsCache.Remove(cell);
+                playerColorCache.Remove(cell);
+                placedPlayers.RemoveAll(p => p.position == cell);
+            }
+        }
 
         EditorUtility.SetDirty(this);
         EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
@@ -307,16 +428,10 @@ public class LevelRuleTileManager : RuleTileManger
         }
 
         Undo.RecordObject(this, "Delete Selected Tiles");
-
-        // Remove holes first via centralized method
+        RemovePlayerGroups();
         RemoveHoles();
-
-        // Remove placed tiles (from base class)
         base.DeleteSelectedTiles();
-
-        // Regenerate inner grid to fill in gaps
         GenerateInnerGrid();
-
         EditorUtility.SetDirty(this);
         EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
     }
@@ -325,15 +440,30 @@ public class LevelRuleTileManager : RuleTileManger
     {
         Undo.RecordObject(this, "Delete All Children");
 
-        // Clear all hole data
+        // Clear holes
         holePositionsCache.Clear();
         holeColorCache.Clear();
         placedHoles.Clear();
+        foreach (Transform child in holeEmptyParent?.transform ?? new GameObject().transform)
+        {
+            if (child.GetComponent<HoleController>() != null)
+                DestroyImmediate(child.gameObject);
+        }
 
-        // Delete all children (from base class)
+        // Clear players
+        playerPositionsCache.Clear();
+        playerColorCache.Clear();
+        placedPlayers.Clear();
+        foreach (Transform child in playerGroupParent?.transform ?? new GameObject().transform)
+        {
+            if (child.GetComponent<PlayerGroup>() != null)
+                DestroyImmediate(child.gameObject);
+        }
+
+        // Base clears placedTiles and children
         base.DeleteAllChildren();
 
-        // Remove inner tiles
+        // Inner tiles
         RemoveInnerTiles();
 
         EditorUtility.SetDirty(this);
@@ -342,7 +472,7 @@ public class LevelRuleTileManager : RuleTileManger
 
     public void CleanupOrphanedEntries()
     {
-        // Clean up holes
+        // Holes
         for (int i = placedHoles.Count - 1; i >= 0; i--)
         {
             var hole = placedHoles[i];
@@ -351,78 +481,123 @@ public class LevelRuleTileManager : RuleTileManger
                 placedHoles.RemoveAt(i);
                 holePositionsCache.Remove(hole.position);
                 holeColorCache.Remove(hole.position);
-                Debug.Log($"[LevelRuleTileManager] Cleaned up orphaned hole entry at {hole.position}");
+                Debug.Log($"Cleaned orphaned hole at {hole.position}");
             }
         }
 
-        // Clean up inner tiles
+        // Players
+        for (int i = placedPlayers.Count - 1; i >= 0; i--)
+        {
+            var p = placedPlayers[i];
+            if (p.Obj == null)
+            {
+                placedPlayers.RemoveAt(i);
+                playerPositionsCache.Remove(p.position);
+                playerColorCache.Remove(p.position);
+                Debug.Log($"Cleaned orphaned player at {p.position}");
+            }
+        }
+
+        // Inner tiles
         foreach (var kv in innerTiles.ToList())
         {
             if (kv.Value == null)
             {
                 innerTiles.Remove(kv.Key);
-                Debug.Log($"[LevelRuleTileManager] Cleaned up orphaned inner tile entry at {kv.Key}");
+                Debug.Log($"Cleaned orphaned inner tile at {kv.Key}");
             }
         }
 
         SyncInnerTileList();
+        SyncHoleList();
+        SyncPlayerGroupList();
     }
 #endif
 
     // Query methods
     public bool IsBlocked(Vector2Int pos) => placedTilesCache.Contains(pos);
-    public bool IsHole(Vector2Int pos) => holeColorCache.ContainsKey(pos);
+    
+    public bool IsHole(Vector2Int pos) => holePositionsCache.Contains(pos);
     public ColorEnum? GetHoleColor(Vector2Int pos) =>
-        holeColorCache.TryGetValue(pos, out ColorEnum color) ? color : null;
-    public bool HasInnerTile(Vector2Int pos) => innerTiles.ContainsKey(pos);
+        holeColorCache.TryGetValue(pos, out var hc) ? hc : (ColorEnum?)null;
+
+    public bool HasInnerTile(Vector2Int pos) => innerTilePositionsCache.Contains(pos);
     
-    public InnerTile GetInnerTile(Vector2Int gridPos)
+    public InnerTile GetInnerTile(Vector2Int gridPos) =>
+        innerTiles.TryGetValue(gridPos, out var go) ? go.GetComponent<InnerTile>() : null;
+
+    public bool IsPlayerGroup(Vector2Int pos) => playerPositionsCache.Contains(pos);
+    public ColorEnum? GetPlayerGroupColor(Vector2Int pos) =>
+        playerColorCache.TryGetValue(pos, out var pc) ? pc : (ColorEnum?)null;
+    public PlayerGroup GetPlayerGroup(Vector2Int gridPos) =>
+        playerGameObjects.TryGetValue(gridPos, out var go) ? go.GetComponent<PlayerGroup>() : null;
+
+    public void RemovePlayerGroup(Vector2Int pos)
     {
-        if (innerTiles.TryGetValue(gridPos, out var go))
-            return go.GetComponent<InnerTile>();
-        return null;
+        playerPositionsCache.Remove(pos);
+        playerColorCache.Remove(pos);
+        playerGameObjects.Remove(pos);
     }
-    
+
+    public void RemoveHole(Vector2Int pos)
+    {
+        holePositionsCache.Remove(pos);
+        holeColorCache.Remove(pos);
+        holeGameObjects.Remove(pos);
+    }
+
     public void UpdateHolePos(HoleController holeController, Vector2Int? newPos)
     {
-        // 1) Grab old position
         Vector2Int oldPos = holeController.holePos;
-
-        // 2) Deletion path
         if (!newPos.HasValue)
         {
             if (holePositionsCache.Remove(oldPos))
                 holeColorCache.Remove(oldPos);
-
-            placedHoles.RemoveAll(po =>
-                po.position == oldPos &&
-                po.Obj == holeController.gameObject
-            );
+            placedHoles.RemoveAll(po => po.position == oldPos && po.Obj == holeController.gameObject);
+            holeGameObjects.Remove(oldPos);
             return;
         }
 
-        // 3) Add / Move path
-        Vector2Int targetPos = newPos.Value;
-
-        // 3a) Clean up old entries
+        Vector2Int target = newPos.Value;
         if (holePositionsCache.Remove(oldPos))
             holeColorCache.Remove(oldPos);
+        placedHoles.RemoveAll(po => po.position == oldPos && po.Obj == holeController.gameObject);
+        holeGameObjects.Remove(oldPos);
 
-        placedHoles.RemoveAll(po =>
-            po.position == oldPos &&
-            po.Obj == holeController.gameObject
-        );
+        holePositionsCache.Add(target);
+        holeColorCache[target] = holeController.holeColor;
+        placedHoles.Add(new PlacedObj { position = target, Obj = holeController.gameObject });
+        holeGameObjects[target] = holeController.gameObject;
 
-        // 3b) Add new entries
-        holePositionsCache.Add(targetPos);
-        holeColorCache[targetPos] = holeController.holeColor;
-        placedHoles.Add(new PlacedObj {
-            position = targetPos,
-            Obj      = holeController.gameObject
-        });
+        holeController.transform.position = GetWorldPosition(target.x, target.y);
+        holeController.holePos = target;
+    }
 
-        // 3c) Update GameObject and controller
-        holeController.transform.position = GetWorldPosition(targetPos.x, targetPos.y);
-        holeController.holePos = targetPos;
+    public void UpdatePlayerPos(PlayerGroup ctrl, Vector2Int? newPos)
+    {
+        Vector2Int oldPos = ctrl.playerPos;
+        if (!newPos.HasValue)
+        {
+            if (playerPositionsCache.Remove(oldPos))
+                playerColorCache.Remove(oldPos);
+            placedPlayers.RemoveAll(po => po.position == oldPos && po.Obj == ctrl.gameObject);
+            playerGameObjects.Remove(oldPos);
+            return;
+        }
+
+        Vector2Int target = newPos.Value;
+        if (playerPositionsCache.Remove(oldPos))
+            playerColorCache.Remove(oldPos);
+        placedPlayers.RemoveAll(po => po.position == oldPos && po.Obj == ctrl.gameObject);
+        playerGameObjects.Remove(oldPos);
+
+        playerPositionsCache.Add(target);
+        playerColorCache[target] = ctrl.playerColor;
+        placedPlayers.Add(new PlacedObj { position = target, Obj = ctrl.gameObject });
+        playerGameObjects[target] = ctrl.gameObject;
+
+        ctrl.transform.position = GetWorldPosition(target.x, target.y);
+        ctrl.playerPos = target;
+        ctrl.UpdatePlayerMaterials();
     }
 }

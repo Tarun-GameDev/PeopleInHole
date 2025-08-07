@@ -15,7 +15,7 @@ public class InputManager : MonoBehaviour
     [Header("Swipe Settings")]
     private Vector2 swipeStartScreenPos;
     private bool isSwiping = false;
-    private float minSwipeDist = 50f;
+    private float minSwipeDist = 100f;
     private Vector2Int lastDirection = Vector2Int.zero;
 
     [Header("Fade Settings")]
@@ -28,19 +28,23 @@ public class InputManager : MonoBehaviour
     private HoleController currentSwipedHole;
     private Coroutine _fadeTilesCoroutine;
 
+    private GameManager gameManager;
+
     private void Start()
     {
         if (levelRuleTileManager == null)
             levelRuleTileManager = FindObjectOfType<LevelRuleTileManager>();
+        if(gameManager == null)
+            gameManager = GameManager.Instance;
     }
-
+    
     /// <summary>
     /// Predicts where the hole will stop sliding along a straight line.
     /// </summary>
     private Vector2Int ComputeEndPosition(Vector2Int start, Vector2Int direction)
     {
         var next = start + direction;
-        while (!levelRuleTileManager.IsBlocked(next) && !levelRuleTileManager.IsHole(next))
+        while (!levelRuleTileManager.IsBlocked(next) && !levelRuleTileManager.IsHole(next) && !levelRuleTileManager.IsPlayerGroup(next))
             next += direction;
         return next - direction;
     }
@@ -106,7 +110,7 @@ public class InputManager : MonoBehaviour
         }
 
         // Continuous swipe: while holding and hole is stationary
-        if (isSwiping && currentSwipedHole != null && pointerIsHeld && !currentSwipedHole.isMoving)
+        if (isSwiping && currentSwipedHole != null && pointerIsHeld && !currentSwipedHole.isMoving && !currentSwipedHole.holeDead)
         {
             Vector2 swipeDelta = pointerPos - swipeStartScreenPos;
             if (swipeDelta.magnitude >= minSwipeDist)
@@ -129,7 +133,7 @@ public class InputManager : MonoBehaviour
 
                     // Build and start the staggered fade coroutine
                     var path = new List<Vector2Int>(GetPathInclusive(startGridPos, endGridPos));
-                    _fadeTilesCoroutine = StartCoroutine(FadeInnerTilesWithDelay(path));
+                    _fadeTilesCoroutine = StartCoroutine(FadeInnerTilesWithDelay(path,currentSwipedHole.holeColor));
 
                     // Now slide the hole; reset origin when done
                     currentSwipedHole.SlideUntilBlocked(direction, levelRuleTileManager, actualEnd =>
@@ -153,14 +157,15 @@ public class InputManager : MonoBehaviour
     /// <summary>
     /// Fades each inner-tile in turn, waiting fadeDelay between each.
     /// </summary>
-    private IEnumerator FadeInnerTilesWithDelay(List<Vector2Int> cells)
+    private IEnumerator FadeInnerTilesWithDelay(List<Vector2Int> cells,ColorEnum _color)
     {
+        Color _baseColor = gameManager.colorManager.ColorEnum_Material[(int)_color].baseColor;
         for (int i = 0; i < cells.Count; i++)
         {
             var cell = cells[i];
             var inner = levelRuleTileManager.GetInnerTile(cell);
             if (inner != null)
-                inner.FadeFromHalfToZero();
+                inner.FadeFromHalfToZero(_baseColor);
 
             // for the first two cells, don’t wait at all;
             // after that, pause between each fade

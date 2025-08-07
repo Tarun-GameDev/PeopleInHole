@@ -8,7 +8,7 @@ public class InnerTile : MonoBehaviour
     public MeshRenderer _meshRenderer;
     private Coroutine _fadeCoroutine;
     
-    public void FadeFromHalfToZero()
+    public void FadeFromHalfToZero(Color baseColor)
     {
         if (_fadeCoroutine != null)
         {
@@ -16,13 +16,11 @@ public class InnerTile : MonoBehaviour
             _fadeCoroutine = null;
         }
 
-        _fadeCoroutine = StartCoroutine(FadeRoutine());
+        _fadeCoroutine = StartCoroutine(FadeRoutine(baseColor));
     }
 
-    private IEnumerator FadeRoutine()
+    private IEnumerator FadeRoutine( Color baseColor)
     {
-        Color baseColor = Color.cyan;
-        
         Material mat = _meshRenderer.material;
         baseColor.a = 0.5f;
         mat.color = baseColor;
@@ -31,7 +29,7 @@ public class InnerTile : MonoBehaviour
         while (elapsed < fadeDuration)
         {
             elapsed += Time.deltaTime;
-            float a = Mathf.Lerp(0.5f, 0f, elapsed / fadeDuration);
+            float a = Mathf.Lerp(0.8f, 0f, elapsed / fadeDuration);
             Color c = mat.color;
             c.a = a;
             mat.color = c;

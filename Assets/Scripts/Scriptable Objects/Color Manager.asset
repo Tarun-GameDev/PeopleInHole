@@ -14,108 +14,108 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ColorEnum_Material:
   - Color: 0
-    PlayerMaterial: {fileID: 2100000, guid: 78d06d36351018143a13f74d47a9fbe2, type: 2}
+    PlayerMaterial: {fileID: 2100000, guid: 74f2fa1ed51e8cc4c89a16d6ac3e9f52, type: 2}
     HoleMaterial: {fileID: 2100000, guid: 78d06d36351018143a13f74d47a9fbe2, type: 2}
-    baseColor: {r: 0.084905684, g: 0.06928624, b: 0.06928624, a: 1}
+    baseColor: {r: 0, g: 0, b: 0, a: 1}
   - Color: 1
-    PlayerMaterial: {fileID: 2100000, guid: 39ae225f3bd65464c8f4f7cd0dc0d619, type: 2}
+    PlayerMaterial: {fileID: 2100000, guid: 782d9618a360a684085e1ad2334b87bb, type: 2}
     HoleMaterial: {fileID: 2100000, guid: 39ae225f3bd65464c8f4f7cd0dc0d619, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.027450982, g: 0.7058824, b: 0.9960785, a: 1}
   - Color: 2
-    PlayerMaterial: {fileID: 2100000, guid: 5dbbdceaee75fb44ba95bdc6cc9ce8d0, type: 2}
+    PlayerMaterial: {fileID: 2100000, guid: e40d8f5ab4ff2564bbbc8bac13e261a4, type: 2}
     HoleMaterial: {fileID: 2100000, guid: 5dbbdceaee75fb44ba95bdc6cc9ce8d0, type: 2}
-    baseColor: {r: 1, g: 0.3669502, b: 0, a: 1}
+    baseColor: {r: 0.49411768, g: 0.21960786, b: 0.17254902, a: 1}
   - Color: 3
-    PlayerMaterial: {fileID: 2100000, guid: 7da9ec1121be6b844b0d39c433120c69, type: 2}
+    PlayerMaterial: {fileID: 2100000, guid: e66d41e18c9eb4f4b9d86e00867a9e81, type: 2}
     HoleMaterial: {fileID: 2100000, guid: 7da9ec1121be6b844b0d39c433120c69, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.63529414, g: 0.4666667, b: 0.4431373, a: 1}
   - Color: 4
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: 82d77c9c3e221b3409cf8e116d9a46f7, type: 2}
     HoleMaterial: {fileID: 2100000, guid: d6614e8c4216c024cb9dcb47286ecc61, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.95294124, g: 0.5882353, b: 0.62352943, a: 1}
   - Color: 5
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: d92dccb8e19e57d44b9205f1473c328a, type: 2}
     HoleMaterial: {fileID: 2100000, guid: 22ea2d2d82dac3a45a82c4202ea2dfa9, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.34901962, g: 0.15686275, b: 0.25490198, a: 1}
   - Color: 6
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: 6f9689f1dd9ffc94bb507158cdd1a643, type: 2}
     HoleMaterial: {fileID: 2100000, guid: d3af0519de464734b846998c3118723c, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.9960785, g: 0.6, b: 0.12941177, a: 1}
   - Color: 7
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: 268d4b1cc9abf934381a7e806dd02107, type: 2}
     HoleMaterial: {fileID: 2100000, guid: ae3327c7cc3481e48bfeb63cde761c9b, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.10980393, g: 0.47450984, b: 0.24705884, a: 1}
   - Color: 8
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: 61d92e1183567ff41ae9462849c6f756, type: 2}
     HoleMaterial: {fileID: 2100000, guid: 2f0f1b8e8b6a20f4094b3cee388f01a9, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.9372549, g: 0.7594434, b: 0.21568625, a: 1}
   - Color: 9
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: 71585267d0b65b94ba37fe5d598d7c72, type: 2}
     HoleMaterial: {fileID: 2100000, guid: d7c55d564a38de747ad4b11cc2fe22aa, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.5426212, g: 1, b: 0.1462264, a: 1}
   - Color: 10
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: 4d9213f3c9f755c49a9993dedc5a1c66, type: 2}
     HoleMaterial: {fileID: 2100000, guid: 74a9b9b8b17c686409d07141e8ada69d, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.4666667, g: 0.57254905, b: 0.6509804, a: 1}
   - Color: 11
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: fa474db34a56cec45ad92bad18e5018e, type: 2}
     HoleMaterial: {fileID: 2100000, guid: 7534fa08037a8ac4ead4e055af25add2, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.17254902, g: 0.121568635, b: 0.50980395, a: 1}
   - Color: 12
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: de83651d92f00224198dfe89fefa4279, type: 2}
     HoleMaterial: {fileID: 2100000, guid: a3729bd3300f6d740bd696d32ab55f47, type: 2}
-    baseColor: {r: 0.5471698, g: 0.03355288, b: 0.03355288, a: 1}
+    baseColor: {r: 0.18431373, g: 0.8862746, b: 0.8352942, a: 1}
   - Color: 13
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: 251dded9480ea774b872d6cdd4619c2c, type: 2}
     HoleMaterial: {fileID: 2100000, guid: 9364ded9ff45616439d09cd36e8ce6e6, type: 2}
-    baseColor: {r: 1, g: 0.6544966, b: 0, a: 1}
+    baseColor: {r: 0, g: 0.48235297, b: 0.9960785, a: 1}
   - Color: 14
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: bc72874bee9cfb54c83d74b2ff847989, type: 2}
     HoleMaterial: {fileID: 2100000, guid: d011d9f71d891c44fbb89a037d7a298b, type: 2}
-    baseColor: {r: 0.43967175, g: 0.8018868, b: 0.16264686, a: 1}
+    baseColor: {r: 0.9960785, g: 0.47450984, b: 0.1254902, a: 1}
   - Color: 15
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: 776abf23d1d1ff14b969da937d45e14e, type: 2}
     HoleMaterial: {fileID: 2100000, guid: 910ec8ba62e932c40aedfe380369e0e5, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.9490197, g: 0.76470596, b: 0.98823535, a: 1}
   - Color: 16
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: 7b2c846a0accdbb48b1a97885495bbb3, type: 2}
     HoleMaterial: {fileID: 2100000, guid: a5a549f882833624eb0cb57d205bbd1d, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.90196085, g: 0.4156863, b: 0.7725491, a: 1}
   - Color: 17
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: ab166cbe63ac04d4e9fb6e3c181aeb2a, type: 2}
     HoleMaterial: {fileID: 2100000, guid: 670622b5aec360d43aa9afba30dd645a, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.7019608, g: 0.45098042, b: 0.9960785, a: 1}
   - Color: 18
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: 261a77e4f8a63f447a466185b3740cba, type: 2}
     HoleMaterial: {fileID: 2100000, guid: b7367fe18a8723f4985b7bd289d18b16, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.91372555, g: 0.15294118, b: 0.21568629, a: 1}
   - Color: 19
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: 66c97eaa0e7abb04495953359e579aa1, type: 2}
     HoleMaterial: {fileID: 2100000, guid: af69e369783d1994d87abc0dfe4a4e73, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.69411767, g: 0.7176471, b: 0.882353, a: 1}
   - Color: 20
-    PlayerMaterial: {fileID: 0}
+    PlayerMaterial: {fileID: 2100000, guid: e14e212a8b585c241a37c8ed04528c30, type: 2}
     HoleMaterial: {fileID: 2100000, guid: 8396559140c63304fa9a656b2ca86a82, type: 2}
-    baseColor: {r: 1, g: 1, b: 1, a: 1}
+    baseColor: {r: 0.9960785, g: 0.909804, b: 0.121568635, a: 1}
   materials:
-  - {fileID: 2100000, guid: 78d06d36351018143a13f74d47a9fbe2, type: 2}
-  - {fileID: 2100000, guid: 39ae225f3bd65464c8f4f7cd0dc0d619, type: 2}
-  - {fileID: 2100000, guid: 5dbbdceaee75fb44ba95bdc6cc9ce8d0, type: 2}
-  - {fileID: 2100000, guid: 7da9ec1121be6b844b0d39c433120c69, type: 2}
-  - {fileID: 2100000, guid: d6614e8c4216c024cb9dcb47286ecc61, type: 2}
-  - {fileID: 2100000, guid: 22ea2d2d82dac3a45a82c4202ea2dfa9, type: 2}
-  - {fileID: 2100000, guid: d3af0519de464734b846998c3118723c, type: 2}
-  - {fileID: 2100000, guid: ae3327c7cc3481e48bfeb63cde761c9b, type: 2}
-  - {fileID: 2100000, guid: 2f0f1b8e8b6a20f4094b3cee388f01a9, type: 2}
-  - {fileID: 2100000, guid: d7c55d564a38de747ad4b11cc2fe22aa, type: 2}
-  - {fileID: 2100000, guid: 74a9b9b8b17c686409d07141e8ada69d, type: 2}
-  - {fileID: 2100000, guid: 7534fa08037a8ac4ead4e055af25add2, type: 2}
-  - {fileID: 2100000, guid: a3729bd3300f6d740bd696d32ab55f47, type: 2}
-  - {fileID: 2100000, guid: 9364ded9ff45616439d09cd36e8ce6e6, type: 2}
-  - {fileID: 2100000, guid: d011d9f71d891c44fbb89a037d7a298b, type: 2}
-  - {fileID: 2100000, guid: 910ec8ba62e932c40aedfe380369e0e5, type: 2}
-  - {fileID: 2100000, guid: a5a549f882833624eb0cb57d205bbd1d, type: 2}
-  - {fileID: 2100000, guid: 670622b5aec360d43aa9afba30dd645a, type: 2}
-  - {fileID: 2100000, guid: b7367fe18a8723f4985b7bd289d18b16, type: 2}
-  - {fileID: 2100000, guid: af69e369783d1994d87abc0dfe4a4e73, type: 2}
-  - {fileID: 2100000, guid: 8396559140c63304fa9a656b2ca86a82, type: 2}
+  - {fileID: 2100000, guid: 74f2fa1ed51e8cc4c89a16d6ac3e9f52, type: 2}
+  - {fileID: 2100000, guid: 782d9618a360a684085e1ad2334b87bb, type: 2}
+  - {fileID: 2100000, guid: e40d8f5ab4ff2564bbbc8bac13e261a4, type: 2}
+  - {fileID: 2100000, guid: e66d41e18c9eb4f4b9d86e00867a9e81, type: 2}
+  - {fileID: 2100000, guid: 82d77c9c3e221b3409cf8e116d9a46f7, type: 2}
+  - {fileID: 2100000, guid: d92dccb8e19e57d44b9205f1473c328a, type: 2}
+  - {fileID: 2100000, guid: 6f9689f1dd9ffc94bb507158cdd1a643, type: 2}
+  - {fileID: 2100000, guid: 268d4b1cc9abf934381a7e806dd02107, type: 2}
+  - {fileID: 2100000, guid: 61d92e1183567ff41ae9462849c6f756, type: 2}
+  - {fileID: 2100000, guid: 71585267d0b65b94ba37fe5d598d7c72, type: 2}
+  - {fileID: 2100000, guid: 4d9213f3c9f755c49a9993dedc5a1c66, type: 2}
+  - {fileID: 2100000, guid: fa474db34a56cec45ad92bad18e5018e, type: 2}
+  - {fileID: 2100000, guid: de83651d92f00224198dfe89fefa4279, type: 2}
+  - {fileID: 2100000, guid: 251dded9480ea774b872d6cdd4619c2c, type: 2}
+  - {fileID: 2100000, guid: bc72874bee9cfb54c83d74b2ff847989, type: 2}
+  - {fileID: 2100000, guid: 776abf23d1d1ff14b969da937d45e14e, type: 2}
+  - {fileID: 2100000, guid: 7b2c846a0accdbb48b1a97885495bbb3, type: 2}
+  - {fileID: 2100000, guid: ab166cbe63ac04d4e9fb6e3c181aeb2a, type: 2}
+  - {fileID: 2100000, guid: 261a77e4f8a63f447a466185b3740cba, type: 2}
+  - {fileID: 2100000, guid: 66c97eaa0e7abb04495953359e579aa1, type: 2}
+  - {fileID: 2100000, guid: e14e212a8b585c241a37c8ed04528c30, type: 2}

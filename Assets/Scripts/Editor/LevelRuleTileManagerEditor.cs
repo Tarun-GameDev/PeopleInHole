@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+// LevelRuleTileManagerEditor.cs
 using DT.GridSystem.Ruletile;
 using UnityEditor;
 using UnityEngine;
@@ -6,48 +6,55 @@ using UnityEngine;
 [CustomEditor(typeof(LevelRuleTileManager))]
 public class LevelRuleTileManagerEditor : RuleTileMangerEditor
 {
-    private const string KEY = "LevelRuleTileManagerEditor_SelectedHoleColor";
+    private const string HOLE_KEY   = "LevelRuleTileManagerEditor_SelectedHoleColor";
+    private const string PLAYER_KEY = "LevelRuleTileManagerEditor_SelectedPlayerColor";
 
-    // Cache the target
-    private LevelRuleTileManager manager => (LevelRuleTileManager)target;
+    private LevelRuleTileManager Manager => (LevelRuleTileManager)target;
 
-    // SessionState to remember the last-picked color
     public ColorEnum selectedHoleColor
     {
-        get => (ColorEnum)SessionState.GetInt(KEY, (int)ColorEnum.Red);
-        set => SessionState.SetInt(KEY, (int)value);
+        get => (ColorEnum)SessionState.GetInt(HOLE_KEY, (int)ColorEnum.Red);
+        set => SessionState.SetInt(HOLE_KEY, (int)value);
+    }
+
+    public ColorEnum selectedPlayerColor
+    {
+        get => (ColorEnum)SessionState.GetInt(PLAYER_KEY, (int)ColorEnum.Blue);
+        set => SessionState.SetInt(PLAYER_KEY, (int)value);
     }
 
     public override void OnInspectorGUI()
     {
-        // 1) Draw whatever the base class draws
         EditorGUILayout.LabelField("Grid Settings", EditorStyles.boldLabel);
         base.OnInspectorGUI();
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Level Design Tools", EditorStyles.boldLabel);
 
-        // 2) Begin your own controls
+        // Holes
         EditorGUILayout.BeginHorizontal();
-
-        // color popup
         selectedHoleColor = (ColorEnum)EditorGUILayout.EnumPopup("Hole Color", selectedHoleColor);
-
-        // Add Hole
         if (GUILayout.Button("Add Hole", GUILayout.Width(80)))
         {
-            // push the choice into your component, then spawn
-            manager.selectedHoleColor = selectedHoleColor;
-            manager.SpawnHole();
+            Manager.selectedHoleColor = selectedHoleColor;
+            Manager.SpawnHole();
         }
+        if (GUILayout.Button("Remove Hole", GUILayout.Width(100)))
+            Manager.RemoveHoles();
+        EditorGUILayout.EndHorizontal();
 
-        // Remove Hole
-        if (GUILayout.Button("Remove Hole", GUILayout.Width(80)))
+        EditorGUILayout.Space();
+
+        // Player Groups
+        EditorGUILayout.BeginHorizontal();
+        selectedPlayerColor = (ColorEnum)EditorGUILayout.EnumPopup("Player Color", selectedPlayerColor);
+        if (GUILayout.Button("Add Player", GUILayout.Width(80)))
         {
-            manager.RemoveHoles();
+            Manager.selectedPlayerColor = selectedPlayerColor;
+            Manager.SpawnPlayerGroup();
         }
-
+        if (GUILayout.Button("Remove Player", GUILayout.Width(100)))
+            Manager.RemovePlayerGroups();
         EditorGUILayout.EndHorizontal();
     }
 }
-#endif

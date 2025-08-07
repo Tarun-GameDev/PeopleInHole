@@ -84,7 +84,7 @@ public class ColorManager : ScriptableObject
             int index = (int)colorMaterial.Color;
             if (index >= 0 && index < materials.Count)
             {
-                colorMaterial.HoleMaterial = materials[index];
+                colorMaterial.PlayerMaterial = materials[index];
             }
         }
 
